@@ -4,12 +4,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"fmt"
 
-	"database/sql"
-	_ "github.com/go-sql-driver/mysql"
+	//"database/sql"
+	//_ "github.com/go-sql-driver/mysql"
 
-	router "shopping/router"
-	config "shopping/pkg/conf"
-	//orm    "shopping/pkg/orm"
+	route  "shopping/routes"
+	config "shopping/utils/conf"
+	orm    "shopping/utils/orm"
 )
 
 func init() {
@@ -30,28 +30,29 @@ func init() {
 
 	//fmt.Println(app.String("test01"), database.String("demo01::test01"), app.String("test02"))
 
-	//if err := orm.Register(); err != nil {
-	//	fmt.Println("数据库初始化失败", err)
+	if err := orm.Register(); err != nil {
+		fmt.Println("数据库初始化失败", err)
+	}
+
+	// 数据库使用示例
+	//db, err1 := sql.Open("mysql", "root:*Kelvin2020@tcp(127.0.0.1:3306)/db01")
+
+	//if err1 != nil {
+	//	fmt.Println("数据库连接失败", err1)
 	//}
 
-	db, err1 := sql.Open("mysql", "root:*Kelvin2020@tcp(127.0.0.1:3306)/db01")
+	//db.SetMaxIdleConns(10)
+	//db.SetMaxOpenConns(10)
+	//err2 := db.Ping()
 
-	if err1 != nil {
-		fmt.Println("数据库连接失败", err1)
-	}
-
-	db.SetMaxIdleConns(10)
-	db.SetMaxOpenConns(10)
-	err2 := db.Ping()
-
-	if err2 != nil {
-		fmt.Println("DB ping error: ", err2)
-	}
+	//if err2 != nil {
+	//	fmt.Println("DB ping error: ", err2)
+	//}
 }
 
 func main() {
 	r := gin.New()
 
-	router.AddRouter(r)
+	route.AddRoute(r)
 	r.Run(":10003")
 }

@@ -3,15 +3,19 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	// capi   "shopping/controller/api"
-	cadmin "shopping/app/controller/admin"
-	madmin "shopping/app/middleware/admin"
+	cadmin "shopping/app/controllers/admin"
+	//madmin "shopping/app/middleware/admin"
 )
 
-func AddRouter(r *gin.Engine) {
+func AddRoute(r *gin.Engine) {
 
-	admin := r.Group("/admin").Use(madmin.Logger(), madmin.Recovery())
+	admin := r.Group("/admin").Use()
 	{
-		site := &cadmin.SiteController{}	
-		admin.GET("/site", site.Index)
+		category := &cadmin.CategoryController{}	
+		admin.GET("/category", category.List)
+		admin.GET("/category/{}", category.Show)
+		admin.POST("/category", category.Create)
+		admin.PUT("/category/{}", category.Update)
+		admin.DELETE("/category/{}", category.Delete)
 	}
 }

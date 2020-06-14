@@ -2,55 +2,73 @@ package orm
 
 import (
 	"github.com/jinzhu/gorm"
+	"errors"
+	//"fmt"
 )
 
 type Model struct {
 	gorm.Model
 }
 
-type Modeler interface {
-	// 
+type ModelMaker interface {
+	Connection() string
+	GetDb(ModelMaker) (*gorm.DB, error) 
+	TableName() string 
 }
 
 func (this *Model) Connection() string {
 	return "default"
 }
 
-func (this *Model) GetDb() (db *gorm.DB, err error) {
-	// 获取连接名
-	conn := this.Connection()
-	// 获取数据库连接信息
+func (this *Model) GetDb(modelmaker ModelMaker) (db *gorm.DB, err error) {
+	conn := modelmaker.Connection()
 	return New(conn)
-} 
-
-func (this *Model) Create(model Modeler) (model Modeler, err error) {
-	if db, err := this.GetDb(); err != nil {
-		return
-	}
-
-	// 插入数据
-	db.Create(model)
-	return
 }
 
-func (this *Model) Update(model Modeler) (model Modeler, err error) {
-	if db, err := this.GetDb(); err != nil {
-		return
-	}
-
-	db.Save(model)
-	return
+func (this *Model) TableName() string {
+	return "models"
 }
 
-func (this *Model) Delete(model Modeler) (model Modeler, err error) {
-	if db, err := this.GetDb(); err != nil {
-		return
+func (this *Model) Create(modelmaker ModelMaker) (ModelMaker, error) {
+	db, err := modelmaker.GetDb(modelmaker);
+	if err != nil {
+		return modelmaker, err
 	}
 
-	db.Delete(model)
-	return
+	result := db.Create(modelmaker)
+
+	if result.Error != nil {
+		return modelmaker, result.Error
+	}
+
+	modelmaker, ok := result.Value.(ModelMaker)
+
+	if !ok {
+		return modelmaker, errors.New("error struct type")
+	}
+
+	//fmt.Println("orm result: ", result.Value, result.Error, result.RowsAffected)
+	return modelmaker, nil
 }
 
-func (this *Model) Search(model Modeler) {
-	// 
-} 
+//func (this *Model) Update(modelmaker ModelMaker) (modelmaker ModelMaker, err error) {
+//	if db, err := modelmaker.GetDb(); err != nil {
+//		return
+//	}
+//
+//	db.Save(model)
+//	return
+//}
+
+//func (this *Model) Delete(model Modeler) (model Modeler, err error) {
+//	if db, err := this.GetDb(); err != nil {
+//		return
+//	}
+//
+//	db.Delete(model)
+//	return
+//}
+//
+//func (this *Model) Search(model Modeler) {
+//	// 
+//} 

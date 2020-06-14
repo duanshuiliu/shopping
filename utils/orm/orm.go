@@ -6,7 +6,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"strconv"
 	"errors"
-	"fmt"
+	//"fmt"
 
 	config "shopping/utils/conf"
 )
