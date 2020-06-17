@@ -3,7 +3,7 @@ package admin
 import (
 	"github.com/gin-gonic/gin"
 	//"fmt"
-	"errors"
+	"strconv"
 
 	//orm    "shopping/utils/orm"
 	sModel "shopping/app/models/shopping"
@@ -11,6 +11,36 @@ import (
 
 type Category struct {
 	BaseService
+}
+
+func (this *Category) ValidateOfShow(c *gin.Context) (uint, error) {
+	id := c.Param("id")
+
+	i, err := strconv.ParseUint(id, 10, 64)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return uint(i), nil
+}
+
+func (this *Category) Show(id uint) (category *sModel.Category, err error) {
+	category = &sModel.Category{}
+	category.ID = id
+
+	model, err := category.GetDataById(category)
+
+	if err != nil { return }
+
+	category, ok := model.(*sModel.Category);
+
+	if !ok {
+		err = ErrStruct
+		return
+	}
+
+	return
 }
 
 type CategoryCreate struct {
@@ -49,7 +79,86 @@ func (this *Category) Create(data *CategoryCreate) (category *sModel.Category, e
 	category, ok := model.(*sModel.Category);
 		
 	if !ok {
-		err = errors.New("error struct type")
+		err = ErrStruct
+		return
+	}
+
+	return
+}
+
+type CategoryUpdate struct {
+	ID   uint    `json:"id"` 
+	Name string  `json:"name"`
+	Desc string  `json:"desc"`
+}
+
+func (this *Category) ValidateOfUpdate(c *gin.Context) (*CategoryUpdate, error) {
+	var update CategoryUpdate
+
+	if err := c.ShouldBindJSON(&update); err != nil {
+		return &update, err
+	}
+
+	id := c.Param("id")
+
+	i, err := strconv.ParseUint(id, 10, 64)
+
+	if err != nil {
+		return &update, err
+	}
+
+	update.ID = uint(i)
+
+	// TODO 参数验证
+	return &update, nil
+}
+
+func (this *Category) Update(data *CategoryUpdate) (category *sModel.Category, err error) {
+	category = &sModel.Category{
+		Name: data.Name,
+		Desc: data.Desc,
+	}
+
+	category.ID = data.ID
+
+	model, err := category.Update(category)
+
+	if err != nil { return }
+
+	category, ok := model.(*sModel.Category);
+
+	if !ok {
+		err = ErrStruct
+		return
+	}
+
+	return
+}
+
+func (this *Category) ValidateOfDelete(c *gin.Context) (uint, error) {
+	id := c.Param("id")
+
+	i, err := strconv.ParseUint(id, 10, 64)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return uint(i), nil
+}
+
+func (this *Category) Delete(id uint) (category *sModel.Category, err error) {
+	category = &sModel.Category{}
+	category.ID = id
+
+	model, err := category.Delete(category)
+
+	if err != nil { return }
+
+	category, ok := model.(*sModel.Category);
+
+	if !ok {
+		err = ErrStruct
 		return
 	}
 

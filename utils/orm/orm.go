@@ -42,7 +42,7 @@ func Register() (err error) {
 	}
 
 	for _, dbconf := range dbsConf {
-		dsn := dbconf.username+":"+dbconf.password+"@tcp("+dbconf.host+":"+strconv.Itoa(dbconf.port)+")/"+dbconf.dbname
+		dsn := dbconf.username+":"+dbconf.password+"@tcp("+dbconf.host+":"+strconv.Itoa(dbconf.port)+")/"+dbconf.dbname+"?parseTime=true"
 		db, err1 := gorm.Open(dbconf.driver, dsn)
 
 		if err1 != nil {

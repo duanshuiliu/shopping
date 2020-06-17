@@ -13,9 +13,9 @@ func AddRoute(r *gin.Engine) {
 	{
 		category := &cadmin.CategoryController{}	
 		admin.GET("/category", category.List)
-		admin.GET("/category/{}", category.Show)
+		admin.GET("/category/:id", category.Show)
 		admin.POST("/category", category.Create)
-		admin.PUT("/category/{}", category.Update)
-		admin.DELETE("/category/{}", category.Delete)
+		admin.PUT("/category/:id", category.Update)
+		admin.DELETE("/category/:id", category.Delete)
 	}
 }

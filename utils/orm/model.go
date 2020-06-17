@@ -6,6 +6,8 @@ import (
 	//"fmt"
 )
 
+var ErrStruct = errors.New("invalid struct")
+
 type Model struct {
 	gorm.Model
 }
@@ -30,7 +32,8 @@ func (this *Model) TableName() string {
 }
 
 func (this *Model) Create(modelmaker ModelMaker) (ModelMaker, error) {
-	db, err := modelmaker.GetDb(modelmaker);
+	db, err := modelmaker.GetDb(modelmaker)
+
 	if err != nil {
 		return modelmaker, err
 	}
@@ -44,31 +47,77 @@ func (this *Model) Create(modelmaker ModelMaker) (ModelMaker, error) {
 	modelmaker, ok := result.Value.(ModelMaker)
 
 	if !ok {
-		return modelmaker, errors.New("error struct type")
+		return modelmaker, ErrStruct
 	}
 
 	//fmt.Println("orm result: ", result.Value, result.Error, result.RowsAffected)
 	return modelmaker, nil
 }
 
-//func (this *Model) Update(modelmaker ModelMaker) (modelmaker ModelMaker, err error) {
-//	if db, err := modelmaker.GetDb(); err != nil {
-//		return
-//	}
-//
-//	db.Save(model)
-//	return
-//}
+func (this *Model) Update(modelmaker ModelMaker) (ModelMaker, error) {
+	db, err := modelmaker.GetDb(modelmaker);
+	
+	if err != nil {
+		return modelmaker, err	
+	}
 
-//func (this *Model) Delete(model Modeler) (model Modeler, err error) {
-//	if db, err := this.GetDb(); err != nil {
-//		return
-//	}
-//
-//	db.Delete(model)
-//	return
-//}
-//
-//func (this *Model) Search(model Modeler) {
-//	// 
-//} 
+	result := db.Model(modelmaker).Update(modelmaker)
+
+	if result.Error != nil {
+		return modelmaker, result.Error
+	}
+
+	modelmaker, ok := result.Value.(ModelMaker)
+
+	if !ok {
+		return modelmaker, ErrStruct
+	}
+
+	return modelmaker, nil
+}
+
+func (this *Model) Delete(modelmaker ModelMaker) (ModelMaker, error) {
+	db, err := modelmaker.GetDb(modelmaker)
+
+	if err != nil {
+		return modelmaker, err
+	}
+
+	result := db.Delete(modelmaker)
+
+	modelmaker, ok := result.Value.(ModelMaker)
+
+	if !ok {
+		return modelmaker, ErrStruct
+	}
+
+	return modelmaker, nil
+}
+
+func (this *Model) SearchAll(modelmaker ModelMaker) {
+	db, err := modelmaker.GetDb(modelmaker)
+
+	if err != nil {
+		return modelmaker, err
+	}
+
+	result := db.Where(modelmaker).	
+}
+
+func (this *Model) SearchOne(modelmaker ModelMaker) (ModelMaker, error) {
+	db, err := modelmaker.GetDb(modelmaker)
+
+	if err != nil {
+		return modelmaker, err
+	}
+
+	result := db.Where(modelmaker).First(modelmaker)
+
+	modelmaker, ok := result.Value.(ModelMaker)
+
+	if !ok {
+		return modelmaker, ErrStruct
+	}
+
+	return modelmaker, nil
+} 
