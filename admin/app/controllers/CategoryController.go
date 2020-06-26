@@ -1,10 +1,10 @@
-package admin
+package controllers
 
 import (
 	"github.com/gin-gonic/gin"
 	"fmt"
 	
-	aService "shopping/app/services/admin"
+	aService "shopping/admin/app/services"
 )
 
 type CategoryController struct {

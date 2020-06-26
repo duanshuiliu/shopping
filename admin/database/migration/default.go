@@ -3,21 +3,24 @@ package main
 import (
 	"fmt"
 	"time"
+	"os"
 
-	config    "shopping/utils/conf"
-	orm       "shopping/utils/orm"
-	mShopping "shopping/app/models/shopping"
+	config    "shopping/pkg/conf"
+	orm       "shopping/pkg/orm"
+	mShopping "shopping/pkg/models/shopping"
 )
 
 var regModels []orm.ModelMaker
 
 func init() {
-	if err := config.Register(); err != nil {
+	if err := config.Register("../../conf"); err != nil {
 		fmt.Println("配置文件加载失败", err)
+		os.Exit(0)
 	}
 
 	if err := orm.Register(); err != nil {
 		fmt.Println("数据库初始化失败", err)
+		os.Exit(0)
 	}
 }
 
@@ -25,7 +28,7 @@ func main() {
 	fmt.Println("开始创建数据库表单:") 
 
 	// 注册数据库表单
-	register(&mShopping.User{}, &mShopping.Category{})
+	register(&mShopping.User{}, &mShopping.Category{}, &mShopping.Goods{}, &mShopping.Resource{})
 	// 开始执行
 	run()
 }

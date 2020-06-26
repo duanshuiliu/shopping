@@ -94,30 +94,30 @@ func (this *Model) Delete(modelmaker ModelMaker) (ModelMaker, error) {
 	return modelmaker, nil
 }
 
-func (this *Model) SearchAll(modelmaker ModelMaker) {
-	db, err := modelmaker.GetDb(modelmaker)
+// func (this *Model) SearchAll(modelmaker ModelMaker) {
+// 	db, err := modelmaker.GetDb(modelmaker)
 
-	if err != nil {
-		return modelmaker, err
-	}
+// 	if err != nil {
+// 		return modelmaker, err
+// 	}
 
-	result := db.Where(modelmaker).	
-}
+// 	result := db.Where(modelmaker).	
+// }
 
-func (this *Model) SearchOne(modelmaker ModelMaker) (ModelMaker, error) {
-	db, err := modelmaker.GetDb(modelmaker)
+// func (this *Model) SearchOne(modelmaker ModelMaker) (ModelMaker, error) {
+// 	db, err := modelmaker.GetDb(modelmaker)
 
-	if err != nil {
-		return modelmaker, err
-	}
+// 	if err != nil {
+// 		return modelmaker, err
+// 	}
 
-	result := db.Where(modelmaker).First(modelmaker)
+// 	result := db.Where(modelmaker).First(modelmaker)
 
-	modelmaker, ok := result.Value.(ModelMaker)
+// 	modelmaker, ok := result.Value.(ModelMaker)
 
-	if !ok {
-		return modelmaker, ErrStruct
-	}
+// 	if !ok {
+// 		return modelmaker, ErrStruct
+// 	}
 
-	return modelmaker, nil
-} 
+// 	return modelmaker, nil
+// } 

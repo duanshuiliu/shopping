@@ -1,12 +1,11 @@
-package admin
+package services
 
 import (
 	"github.com/gin-gonic/gin"
 	//"fmt"
 	"strconv"
 
-	//orm    "shopping/utils/orm"
-	sModel "shopping/app/models/shopping"
+	mShopping "shopping/pkg/models/shopping"
 )
 
 type Category struct {
@@ -25,15 +24,15 @@ func (this *Category) ValidateOfShow(c *gin.Context) (uint, error) {
 	return uint(i), nil
 }
 
-func (this *Category) Show(id uint) (category *sModel.Category, err error) {
-	category = &sModel.Category{}
+func (this *Category) Show(id uint) (category *mShopping.Category, err error) {
+	category = &mShopping.Category{}
 	category.ID = id
 
 	model, err := category.GetDataById(category)
 
 	if err != nil { return }
 
-	category, ok := model.(*sModel.Category);
+	category, ok := model.(*mShopping.Category);
 
 	if !ok {
 		err = ErrStruct
@@ -62,8 +61,8 @@ func (this *Category) ValidateOfCreate(c *gin.Context) (*CategoryCreate, error) 
 	return &create, nil
 }
 
-func (this *Category) Create(data *CategoryCreate) (category *sModel.Category, err error) {
-	category = &sModel.Category{
+func (this *Category) Create(data *CategoryCreate) (category *mShopping.Category, err error) {
+	category = &mShopping.Category{
 		Type: data.Type,
 		Pid : data.Pid,
 		Name: data.Name,
@@ -76,7 +75,7 @@ func (this *Category) Create(data *CategoryCreate) (category *sModel.Category, e
 		return
 	}
 
-	category, ok := model.(*sModel.Category);
+	category, ok := model.(*mShopping.Category);
 		
 	if !ok {
 		err = ErrStruct
@@ -113,8 +112,8 @@ func (this *Category) ValidateOfUpdate(c *gin.Context) (*CategoryUpdate, error) 
 	return &update, nil
 }
 
-func (this *Category) Update(data *CategoryUpdate) (category *sModel.Category, err error) {
-	category = &sModel.Category{
+func (this *Category) Update(data *CategoryUpdate) (category *mShopping.Category, err error) {
+	category = &mShopping.Category{
 		Name: data.Name,
 		Desc: data.Desc,
 	}
@@ -125,7 +124,7 @@ func (this *Category) Update(data *CategoryUpdate) (category *sModel.Category, e
 
 	if err != nil { return }
 
-	category, ok := model.(*sModel.Category);
+	category, ok := model.(*mShopping.Category);
 
 	if !ok {
 		err = ErrStruct
@@ -147,15 +146,15 @@ func (this *Category) ValidateOfDelete(c *gin.Context) (uint, error) {
 	return uint(i), nil
 }
 
-func (this *Category) Delete(id uint) (category *sModel.Category, err error) {
-	category = &sModel.Category{}
+func (this *Category) Delete(id uint) (category *mShopping.Category, err error) {
+	category = &mShopping.Category{}
 	category.ID = id
 
 	model, err := category.Delete(category)
 
 	if err != nil { return }
 
-	category, ok := model.(*sModel.Category);
+	category, ok := model.(*mShopping.Category);
 
 	if !ok {
 		err = ErrStruct

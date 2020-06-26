@@ -8,8 +8,13 @@ import (
 	"errors"
 	//"fmt"
 
-	config "shopping/utils/conf"
+	config "shopping/pkg/conf"
 )
+
+var Instance *Orm
+
+var ErrEmptyInstance = errors.New("not found instance")
+var ErrEmptyConn     = errors.New("not found connection")
 
 type Orm struct {
 	ConnMap map[string]*gorm.DB
@@ -27,8 +32,6 @@ type dbConfig struct {
 	maxIdleConns int
 	maxOpenConns int	
 }
-
-var Instance *Orm
 
 func Register() (err error) {
 	dbsConf, err := getDbConfig()
@@ -60,8 +63,13 @@ func Register() (err error) {
 }
 
 func New(connection string) (db *gorm.DB, err error) {
+	if Instance == nil {
+		err = ErrEmptyInstance
+		return
+	}
+
 	if _, ok := Instance.ConnMap[connection]; !ok {
-		err = errors.New("未找到该数据库连接，请确认")
+		err = ErrEmptyConn
 		return
 	}
 

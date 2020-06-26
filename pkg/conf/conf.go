@@ -4,10 +4,16 @@ import (
 	"errors"
 	"io/ioutil"
 	"strings"
-	// "fmt"
 
-	"shopping/utils/conf/parsers"
+	"shopping/pkg/conf/parsers"
 )
+
+var Instance *Conf
+
+var DefaultConfigPath string = "./conf"
+
+var ErrEmptyInstance = errors.New("not found instance")
+var ErrEmptyFile     = errors.New("not found config file")
 
 type Conf struct {
 	ConfMap map[string]ConfParser
@@ -17,16 +23,15 @@ type ConfParser interface {
 	Load(string) error
 	Reload() error
 	All() interface{}
-	String(string) string
+	String(string) (string, error)
 }
 
-var Instance   *Conf
-var ConfPath   string = "./conf"
-var ConfSuffix string = ".conf"
+func Register(confPath string) (err error) {
+	if confPath == "" {
+		confPath = DefaultConfigPath
+	}
 
-// 注册配置模块
-func Register() (err error) {
-	conf_files, err := ioutil.ReadDir(ConfPath)
+	conf_files, err := ioutil.ReadDir(confPath)
 
 	if err != nil {
 		return
@@ -41,8 +46,8 @@ func Register() (err error) {
 	for _, file := range conf_files {
 		if !file.IsDir() {
 			filename           := file.Name()
-			filepath           := ConfPath+"/"+filename
-			filenameTrimSuffix := strings.TrimSuffix(filename, ConfSuffix) 
+			filepath           := confPath+"/"+filename
+			filenameTrimSuffix := strings.Split(filename, ".")[0] 
 
 			s[filenameTrimSuffix] = filepath
 		}
@@ -52,7 +57,8 @@ func Register() (err error) {
 		// TODO 工厂模式：这里switch判定是哪个parser
 		parser := &parsers.IniParser{}
 		
-		if err = parser.Load(s[name]); err != nil {
+		if loadErr := parser.Load(s[name]); loadErr != nil {
+			err = loadErr
 			return
 		}
 
@@ -62,11 +68,14 @@ func Register() (err error) {
 	return
 }
 
-// 获取配置文件信息
 func New(filename string) (parser ConfParser, err error) {
+	if Instance == nil {
+		err = ErrEmptyInstance
+		return
+	}
+
 	if _, ok := Instance.ConfMap[filename]; !ok {
-		// 这里不应该做重载的蠢设置，配置文件应该在进程运行时就应该配置好，应该单写一个接口来提供热重载
-		err = errors.New("未找到该配置文件，请确认信息是否正确")
+		err = ErrEmptyFile
 		return
 	}
 
@@ -74,7 +83,6 @@ func New(filename string) (parser ConfParser, err error) {
 	return
 }
 
-// 重载配置文件
 func Reload(filename string) {
 	// 
 }
