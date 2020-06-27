@@ -6,6 +6,12 @@ import (
 	//"fmt"
 )
 
+var (
+	SearchAll    string = "kelvin_sp_all"
+	SearchOne    string = "kelvin_sp_one"
+	SelectFields string = "kelvin_sp_fields"
+)
+
 var ErrStruct = errors.New("invalid struct")
 
 type Model struct {
@@ -16,6 +22,7 @@ type ModelMaker interface {
 	Connection() string
 	GetDb(ModelMaker) (*gorm.DB, error) 
 	TableName() string 
+	Condition(map[string]interface{}, *gorm.DB)
 }
 
 func (this *Model) Connection() string {
@@ -29,6 +36,12 @@ func (this *Model) GetDb(modelmaker ModelMaker) (db *gorm.DB, err error) {
 
 func (this *Model) TableName() string {
 	return "models"
+}
+
+func (this *Model) Condition(data map[string]interface, db *gorm.DB) {
+	if value, ok := data["id"]; ok {
+		db = db.Where("id = ?", value)
+	}
 }
 
 func (this *Model) Create(modelmaker ModelMaker) (ModelMaker, error) {
@@ -94,32 +107,47 @@ func (this *Model) Delete(modelmaker ModelMaker) (ModelMaker, error) {
 	return modelmaker, nil
 }
 
-// func (this *Model) SearchAll(modelmaker ModelMaker) {
+// func (this *Model) Search(modelmaker ModelMaker, data map[string]interface{}) {
 // 	db, err := modelmaker.GetDb(modelmaker)
 
 // 	if err != nil {
 // 		return modelmaker, err
 // 	}
 
-// 	result := db.Where(modelmaker).	
+// 	modelmaker.Condition(data, db)
+
+// 	if ()
+// 	result := db.Find(modelmaker)
+
+// 	modelmaker, ok := result.Value.(ModelMaker)
+
+// 	if !ok {
+// 		return modelmaker, ErrStruct
+// 	}
+
+// 	return modelmaker, nil
 // }
 
-func (this *Model) SearchOne(modelmaker ModelMaker) (ModelMaker, error) {
+func (this *Model) Search(modelmaker ModelMaker, data map[string]interface{}) (interface{}, error) {
 	db, err := modelmaker.GetDb(modelmaker)
 
 	if err != nil {
-		return modelmaker, err
+		return nil, err
 	}
 
-	// result := db.Limit(1).Where(modelmaker).Find(modelmaker)
-	result := db.Limit(1).Where("id = ?", 1).Find(modelmaker)
-	// result := db.First(modelmaker)
+	modelmaker.Condition(data, db)
 
-	modelmaker, ok := result.Value.(ModelMaker)
+	if _, ok := data[SearchAll]; ok {
+		result := db.Find(modelmaker)
 
-	if !ok {
-		return modelmaker, ErrStruct
+		return result, nil
 	}
 
-	return modelmaker, nil
+	if _, ok := data[SearchOne]; ok {
+		result := db.First(modelmaker)
+		
+		return result, nil
+	}
+
+	return nil, nil
 }

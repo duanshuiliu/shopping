@@ -1,12 +1,10 @@
 package shopping
 
 import (
-	//"github.com/jinzhu/gorm"
+	"github.com/jinzhu/gorm"
 )
 
 type User struct {
-	BaseModel
-	
 	// 1=超级管理员 2=管理员 3=普通用户
 	Type       int    `gorm:"column:type;type:tinyint(4);not null;default:3"`
 	Phone      string `gorm:"column:phone;type:varchar(20);not null;default:'';unique"`
@@ -18,8 +16,16 @@ type User struct {
 	// 0=保密 1=男性 2=女性
 	Sex        int    `gorm:"column:sex;type:tinyint(4);not null;default:0"`
 	Avatar     string `gorm:"column:avatar;type:varchar(255);not null;default:''"`
+
+	BaseModel
 }
 
 func (this *User) TableName() string {
 	return "users"
+}
+
+func (this *User) Condition(data map[string]interface{}, db *gorm.DB) {
+	if value, ok := data["id"]; ok {
+		db = db.Where("id = ?", value)
+	}
 }

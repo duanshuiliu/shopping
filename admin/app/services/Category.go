@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	mShopping "shopping/pkg/models/shopping"
+	orm       "shopping/pkg/orm"
 )
 
 type Category struct {
@@ -24,22 +25,15 @@ func (this *Category) ValidateOfShow(c *gin.Context) (uint, error) {
 	return uint(i), nil
 }
 
-func (this *Category) Show(id uint) (category *mShopping.Category, err error) {
-	category = &mShopping.Category{}
+func (this *Category) Show(id uint) (interface{}, error) {
+	category := &mShopping.Category{}
 	// category.ID = id
 
-	model, err := category.SearchOne(category)
+	condition := make(map[string]interface{})
+	condition["id"]          = id
+	condition[orm.SearchOne] = 1
 
-	if err != nil { return }
-
-	category, ok := model.(*mShopping.Category)
-
-	if !ok {
-		err = ErrStruct
-		return
-	}
-
-	return
+	return category.Search(category, condition)
 }
 
 type CategoryCreate struct {
