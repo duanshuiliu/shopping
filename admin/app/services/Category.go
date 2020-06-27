@@ -26,13 +26,13 @@ func (this *Category) ValidateOfShow(c *gin.Context) (uint, error) {
 
 func (this *Category) Show(id uint) (category *mShopping.Category, err error) {
 	category = &mShopping.Category{}
-	category.ID = id
+	// category.ID = id
 
-	model, err := category.GetDataById(category)
+	model, err := category.SearchOne(category)
 
 	if err != nil { return }
 
-	category, ok := model.(*mShopping.Category);
+	category, ok := model.(*mShopping.Category)
 
 	if !ok {
 		err = ErrStruct

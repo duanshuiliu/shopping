@@ -3,16 +3,16 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	
-	cadmin "shopping/admin/app/controllers/admin"
-	//madmin "shopping/app/middleware/admin"
+	controller "shopping/admin/app/controllers"
+	middleware "shopping/admin/app/middleware"
 )
 
 func AddRoute(r *gin.Engine) {
 
-	admin := r.Group("/").Use()
+	admin := r.Group("/").Use(middleware.PreRequestLogger())
 	{
 		// 类别
-		category := &cadmin.CategoryController{}	
+		category := &controller.CategoryController{}	
 		admin.GET("/category", category.List)
 		admin.GET("/category/:id", category.Show)
 		admin.POST("/category", category.Create)

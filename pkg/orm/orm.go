@@ -9,6 +9,7 @@ import (
 	//"fmt"
 
 	config "shopping/pkg/conf"
+	// logger "shopping/pkg/logger"
 )
 
 var Instance *Orm
@@ -47,6 +48,8 @@ func Register() (err error) {
 	for _, dbconf := range dbsConf {
 		dsn := dbconf.username+":"+dbconf.password+"@tcp("+dbconf.host+":"+strconv.Itoa(dbconf.port)+")/"+dbconf.dbname+"?parseTime=true"
 		db, err1 := gorm.Open(dbconf.driver, dsn)
+
+		db.LogMode(true)
 
 		if err1 != nil {
 			err = err1

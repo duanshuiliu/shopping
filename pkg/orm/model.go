@@ -104,20 +104,22 @@ func (this *Model) Delete(modelmaker ModelMaker) (ModelMaker, error) {
 // 	result := db.Where(modelmaker).	
 // }
 
-// func (this *Model) SearchOne(modelmaker ModelMaker) (ModelMaker, error) {
-// 	db, err := modelmaker.GetDb(modelmaker)
+func (this *Model) SearchOne(modelmaker ModelMaker) (ModelMaker, error) {
+	db, err := modelmaker.GetDb(modelmaker)
 
-// 	if err != nil {
-// 		return modelmaker, err
-// 	}
+	if err != nil {
+		return modelmaker, err
+	}
 
-// 	result := db.Where(modelmaker).First(modelmaker)
+	// result := db.Limit(1).Where(modelmaker).Find(modelmaker)
+	result := db.Limit(1).Where("id = ?", 1).Find(modelmaker)
+	// result := db.First(modelmaker)
 
-// 	modelmaker, ok := result.Value.(ModelMaker)
+	modelmaker, ok := result.Value.(ModelMaker)
 
-// 	if !ok {
-// 		return modelmaker, ErrStruct
-// 	}
+	if !ok {
+		return modelmaker, ErrStruct
+	}
 
-// 	return modelmaker, nil
-// } 
+	return modelmaker, nil
+}

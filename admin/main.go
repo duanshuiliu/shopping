@@ -14,7 +14,7 @@ import (
 )
 
 func init() {
-	if err := config.Register(); err != nil {
+	if err := config.Register(""); err != nil {
 		fmt.Println("配置文件加载失败", err)
 		os.Exit(0)
 	}
@@ -57,5 +57,5 @@ func main() {
 	r := gin.New()
 
 	route.AddRoute(r)
-	r.Run(":10003")
+	r.Run("127.0.0.1:10001")
 }
