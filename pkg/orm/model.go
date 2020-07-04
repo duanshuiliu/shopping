@@ -3,7 +3,7 @@ package orm
 import (
 	"github.com/jinzhu/gorm"
 	"errors"
-	//"fmt"
+	"fmt"
 )
 
 var (
@@ -22,7 +22,7 @@ type ModelMaker interface {
 	Connection() string
 	GetDb(ModelMaker) (*gorm.DB, error) 
 	TableName() string 
-	Condition(map[string]interface{}, *gorm.DB)
+	Condition(map[string]interface{}, *gorm.DB) *gorm.DB
 }
 
 func (this *Model) Connection() string {
@@ -38,10 +38,12 @@ func (this *Model) TableName() string {
 	return "models"
 }
 
-func (this *Model) Condition(data map[string]interface, db *gorm.DB) {
+func (this *Model) Condition(data map[string]interface{}, db *gorm.DB) *gorm.DB {
 	if value, ok := data["id"]; ok {
 		db = db.Where("id = ?", value)
 	}
+
+	return db
 }
 
 func (this *Model) Create(modelmaker ModelMaker) (ModelMaker, error) {
@@ -76,6 +78,8 @@ func (this *Model) Update(modelmaker ModelMaker) (ModelMaker, error) {
 
 	result := db.Model(modelmaker).Update(modelmaker)
 
+	fmt.Println("enter update func", modelmaker)
+
 	if result.Error != nil {
 		return modelmaker, result.Error
 	}
@@ -89,44 +93,21 @@ func (this *Model) Update(modelmaker ModelMaker) (ModelMaker, error) {
 	return modelmaker, nil
 }
 
-func (this *Model) Delete(modelmaker ModelMaker) (ModelMaker, error) {
+func (this *Model) Delete(modelmaker ModelMaker) (int64, error) {
 	db, err := modelmaker.GetDb(modelmaker)
 
 	if err != nil {
-		return modelmaker, err
+		return 0, err
 	}
 
 	result := db.Delete(modelmaker)
 
-	modelmaker, ok := result.Value.(ModelMaker)
-
-	if !ok {
-		return modelmaker, ErrStruct
+	if result.Error != nil {
+		return 0, result.Error
 	}
 
-	return modelmaker, nil
+	return result.RowsAffected, nil
 }
-
-// func (this *Model) Search(modelmaker ModelMaker, data map[string]interface{}) {
-// 	db, err := modelmaker.GetDb(modelmaker)
-
-// 	if err != nil {
-// 		return modelmaker, err
-// 	}
-
-// 	modelmaker.Condition(data, db)
-
-// 	if ()
-// 	result := db.Find(modelmaker)
-
-// 	modelmaker, ok := result.Value.(ModelMaker)
-
-// 	if !ok {
-// 		return modelmaker, ErrStruct
-// 	}
-
-// 	return modelmaker, nil
-// }
 
 func (this *Model) Search(modelmaker ModelMaker, data map[string]interface{}) (interface{}, error) {
 	db, err := modelmaker.GetDb(modelmaker)
@@ -135,18 +116,38 @@ func (this *Model) Search(modelmaker ModelMaker, data map[string]interface{}) (i
 		return nil, err
 	}
 
-	modelmaker.Condition(data, db)
+	db = modelmaker.Condition(data, db)
+
+	if value, ok := data[SelectFields]; ok {
+		db = db.Select(value)
+	}
 
 	if _, ok := data[SearchAll]; ok {
 		result := db.Find(modelmaker)
 
-		return result, nil
+		if result.Error != nil {
+			if result.Error == gorm.ErrRecordNotFound {
+				return nil, nil
+			}
+
+			return nil, result.Error
+		}
+
+		return result.Value, nil
 	}
 
 	if _, ok := data[SearchOne]; ok {
 		result := db.First(modelmaker)
+
+		if result.Error != nil {
+			if result.Error == gorm.ErrRecordNotFound {
+				return nil, nil
+			}
+
+			return nil, result.Error
+		}
 		
-		return result, nil
+		return result.Value, nil
 	}
 
 	return nil, nil

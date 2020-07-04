@@ -9,7 +9,7 @@ import (
 
 func AddRoute(r *gin.Engine) {
 
-	admin := r.Group("/").Use(middleware.PreRequestLogger())
+	admin := r.Group("/").Use(middleware.Recovery(), middleware.PreRequestLogger())
 	{
 		// 类别
 		category := &controller.CategoryController{}	

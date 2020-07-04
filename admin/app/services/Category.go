@@ -5,6 +5,7 @@ import (
 	//"fmt"
 	"strconv"
 
+	pError    "shopping/pkg/error"
 	mShopping "shopping/pkg/models/shopping"
 	orm       "shopping/pkg/orm"
 )
@@ -27,11 +28,11 @@ func (this *Category) ValidateOfShow(c *gin.Context) (uint, error) {
 
 func (this *Category) Show(id uint) (interface{}, error) {
 	category := &mShopping.Category{}
-	// category.ID = id
 
 	condition := make(map[string]interface{})
-	condition["id"]          = id
-	condition[orm.SearchOne] = 1
+	condition["id"]             = id
+	condition[orm.SearchOne]    = 1
+	condition[orm.SelectFields] = []string{"id", "name", "pid"}
 
 	return category.Search(category, condition)
 }
@@ -47,7 +48,6 @@ func (this *Category) ValidateOfCreate(c *gin.Context) (*CategoryCreate, error) 
 	var create CategoryCreate
 
 	if err := c.ShouldBindJSON(&create); err != nil {
-		//fmt.Println("validate error: ", err)
 		return &create, err
 	}
 
@@ -140,18 +140,15 @@ func (this *Category) ValidateOfDelete(c *gin.Context) (uint, error) {
 	return uint(i), nil
 }
 
-func (this *Category) Delete(id uint) (category *mShopping.Category, err error) {
-	category = &mShopping.Category{}
+func (this *Category) Delete(id uint) (rows int64, err error) {
+	category := &mShopping.Category{}
 	category.ID = id
 
-	model, err := category.Delete(category)
-
+	rows, err = category.Delete(category)
 	if err != nil { return }
-
-	category, ok := model.(*mShopping.Category);
-
-	if !ok {
-		err = ErrStruct
+	
+	if rows == 0 {
+		err = &pError.MessageError{Message: "not found data"}
 		return
 	}
 

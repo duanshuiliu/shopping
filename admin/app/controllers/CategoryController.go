@@ -2,9 +2,11 @@ package controllers
 
 import (
 	"github.com/gin-gonic/gin"
-	"fmt"
+	// "fmt"
 	
-	aService "shopping/admin/app/services"
+	pError    "shopping/pkg/error"
+	pResponse "shopping/pkg/response"
+	aService  "shopping/admin/app/services"
 )
 
 type CategoryController struct {
@@ -12,7 +14,8 @@ type CategoryController struct {
 }
 
 func (this *CategoryController) List(c *gin.Context) {
-	this.ResponseSuccess(c, 1, 200, "OK")
+	pResponse.ResponseSuccess(c, 1, 200, "OK")
+	return
 }
 
 func (this *CategoryController) Show(c *gin.Context) {
@@ -22,16 +25,19 @@ func (this *CategoryController) Show(c *gin.Context) {
 	data, err := category.ValidateOfShow(c)
 
 	if err != nil {
-		this.ResponseError(c, err.Error(), 500, nil)
+		panic(&pError.MessageError{Message: err.Error()})
 	}
 
 	result, err := category.Show(data)
+	if err != nil { panic(err) }
 
-	if err != nil {
-		this.ResponseError(c, err.Error(), 500, nil)
+	if result == nil {
+		pResponse.ResponseError(c, "not found data", 500, nil)
+		return
 	}
 
-	this.ResponseSuccess(c, result, 200, "success")
+	pResponse.ResponseSuccess(c, result, 200, "success")
+	return
 }
 
 func (this *CategoryController) Create(c *gin.Context) {
@@ -41,19 +47,16 @@ func (this *CategoryController) Create(c *gin.Context) {
 	data, err := category.ValidateOfCreate(c)
 
 	if err != nil {
-		this.ResponseError(c, err.Error(), 500, nil)
-		return
+		panic(&pError.MessageError{Message: err.Error()})
 	}
 
 	result, err := category.Create(data)
 
 	if err != nil {
-		this.ResponseError(c, err.Error(), 500, nil)
-		return	
+		panic(&pError.MessageError{Message: err.Error()})	
 	}
 
-	fmt.Println("返回数据", result)
-	this.ResponseSuccess(c, result.ID, 200, "success")
+	pResponse.ResponseSuccess(c, result, 200, "success")
 	return
 }
 
@@ -64,18 +67,16 @@ func (this *CategoryController) Update(c *gin.Context) {
 	data, err := category.ValidateOfUpdate(c)
 
 	if err != nil {
-		this.ResponseError(c, err.Error(), 500, nil)
-		return
+		panic(&pError.MessageError{Message: err.Error()})
 	}
 
 	result, err := category.Update(data)
 
 	if err != nil {
-		this.ResponseError(c, err.Error(), 500, nil)
-		return
+		panic(&pError.MessageError{Message: err.Error()})
 	}
 
-	this.ResponseSuccess(c, result, 200, "success")
+	pResponse.ResponseSuccess(c, result, 200, "success")
 	return
 }
 
@@ -86,17 +87,12 @@ func (this *CategoryController) Delete(c *gin.Context) {
 	data, err := category.ValidateOfDelete(c)
 
 	if err != nil {
-		this.ResponseError(c, err.Error(), 500, nil)
-		return
-	} 
-
-	_, err = category.Delete(data)
-
-	if err != nil {
-		this.ResponseError(c, err.Error(), 500, nil)
-		return
+		panic(&pError.MessageError{Message: err.Error()})
 	}
 
-	this.ResponseSuccess(c, nil, 200, "success")
+	result, err := category.Delete(data)
+	if err != nil { panic(err) }
+
+	pResponse.ResponseSuccess(c, result, 200, "success")
 	return
 }
