@@ -14,7 +14,19 @@ type CategoryController struct {
 }
 
 func (this *CategoryController) List(c *gin.Context) {
-	pResponse.ResponseSuccess(c, 1, 200, "OK")
+	category := &aService.Category{}
+
+	// 获取参数
+	data, err := category.ValidateOfList(c)
+
+	if err != nil {
+		panic(&pError.MessageError{Message: err.Error()})
+	}
+
+	result, err := category.List(data)
+	if err != nil { panic(err) }
+
+	pResponse.ResponseSuccess(c, result, 200, "success")
 	return
 }
 
@@ -31,11 +43,6 @@ func (this *CategoryController) Show(c *gin.Context) {
 	result, err := category.Show(data)
 	if err != nil { panic(err) }
 
-	if result == nil {
-		pResponse.ResponseError(c, "not found data", 500, nil)
-		return
-	}
-
 	pResponse.ResponseSuccess(c, result, 200, "success")
 	return
 }
@@ -51,10 +58,7 @@ func (this *CategoryController) Create(c *gin.Context) {
 	}
 
 	result, err := category.Create(data)
-
-	if err != nil {
-		panic(&pError.MessageError{Message: err.Error()})	
-	}
+	if err != nil { panic(err) }
 
 	pResponse.ResponseSuccess(c, result, 200, "success")
 	return
@@ -71,10 +75,7 @@ func (this *CategoryController) Update(c *gin.Context) {
 	}
 
 	result, err := category.Update(data)
-
-	if err != nil {
-		panic(&pError.MessageError{Message: err.Error()})
-	}
+	if err != nil { panic(err) }
 
 	pResponse.ResponseSuccess(c, result, 200, "success")
 	return

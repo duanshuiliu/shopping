@@ -9,7 +9,9 @@ import (
 var (
 	SearchAll    string = "kelvin_sp_all"
 	SearchOne    string = "kelvin_sp_one"
-	SelectFields string = "kelvin_sp_fields"
+	SearchFields string = "kelvin_sp_fields"
+	SearchReturn string = "kelvin_sp_return"
+	SearchTables string = "kelvin_sp_tables"
 )
 
 var ErrStruct = errors.New("invalid struct")
@@ -55,6 +57,7 @@ func (this *Model) Create(modelmaker ModelMaker) (ModelMaker, error) {
 
 	result := db.Create(modelmaker)
 
+	fmt.Println("aaaa")
 	if result.Error != nil {
 		return modelmaker, result.Error
 	}
@@ -69,28 +72,20 @@ func (this *Model) Create(modelmaker ModelMaker) (ModelMaker, error) {
 	return modelmaker, nil
 }
 
-func (this *Model) Update(modelmaker ModelMaker) (ModelMaker, error) {
+func (this *Model) Update(modelmaker ModelMaker) (int64, error) {
 	db, err := modelmaker.GetDb(modelmaker);
 	
 	if err != nil {
-		return modelmaker, err	
+		return 0, err	
 	}
 
 	result := db.Model(modelmaker).Update(modelmaker)
 
-	fmt.Println("enter update func", modelmaker)
-
 	if result.Error != nil {
-		return modelmaker, result.Error
+		return 0, result.Error
 	}
 
-	modelmaker, ok := result.Value.(ModelMaker)
-
-	if !ok {
-		return modelmaker, ErrStruct
-	}
-
-	return modelmaker, nil
+	return result.RowsAffected, nil
 }
 
 func (this *Model) Delete(modelmaker ModelMaker) (int64, error) {
@@ -116,38 +111,72 @@ func (this *Model) Search(modelmaker ModelMaker, data map[string]interface{}) (i
 		return nil, err
 	}
 
+	tableName := modelmaker.TableName()
+	db = db.Table(tableName)
+
 	db = modelmaker.Condition(data, db)
 
-	if value, ok := data[SelectFields]; ok {
+	if value, ok := data[SearchFields]; ok {
 		db = db.Select(value)
 	}
 
-	if _, ok := data[SearchAll]; ok {
-		result := db.Find(modelmaker)
+	if tables, ok := data[SearchAll]; ok {
+		fmt.Printf("%T", tables)
+		// db = db.Find(tables)
+		
+		if returnStruct, ok2 := data[SearchReturn]; ok2 {
+			db = db.Scan(returnStruct)
 
-		if result.Error != nil {
-			if result.Error == gorm.ErrRecordNotFound {
-				return nil, nil
+			if db.Error != nil {
+				if db.Error == gorm.ErrRecordNotFound {
+					return nil, nil
+				}
+	
+				return nil, db.Error
 			}
 
-			return nil, result.Error
-		}
+			return returnStruct, nil
+		} else {
+			db = db.Find(tables)
 
-		return result.Value, nil
+			if db.Error != nil {
+				if db.Error == gorm.ErrRecordNotFound {
+					return nil, nil
+				}
+	
+				return nil, db.Error
+			}
+
+			return tables, nil
+		}
 	}
 
 	if _, ok := data[SearchOne]; ok {
-		result := db.First(modelmaker)
+		if returnStruct, ok2 := data[SearchReturn]; ok2 {
+			db = db.Limit(1).Scan(returnStruct)
 
-		if result.Error != nil {
-			if result.Error == gorm.ErrRecordNotFound {
-				return nil, nil
+			if db.Error != nil {
+				if db.Error == gorm.ErrRecordNotFound {
+					return nil, nil
+				}
+	
+				return nil, db.Error
 			}
 
-			return nil, result.Error
+			return returnStruct, nil
+		}else {
+			db = db.First(modelmaker)
+
+			if db.Error != nil {
+				if db.Error == gorm.ErrRecordNotFound {
+					return nil, nil
+				}
+	
+				return nil, db.Error
+			}
+
+			return db.Value, nil
 		}
-		
-		return result.Value, nil
 	}
 
 	return nil, nil

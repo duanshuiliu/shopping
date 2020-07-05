@@ -3,8 +3,8 @@ package middleware
 import (
 	"github.com/gin-gonic/gin" 
 	"fmt"
-	"io/ioutil"
-	"bytes"
+	// "io/ioutil"
+	// "bytes"
 
 	logger "shopping/pkg/logger"
 	zap    "go.uber.org/zap"
@@ -19,9 +19,10 @@ func Logger() gin.HandlerFunc {
 
 func PreRequestLogger() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		params,_ := c.GetRawData()
-		c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(params))
-		logger.NewLogger(c).Info("Get Request Params",  zap.String("params", string(params)))
+		params := 1
+		// params,_ := c.GetRawData()
+		// c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(params))
+		logger.NewLogger(c).Info("Get Request Params", zap.String("params", string(params)))
 
 		c.Next()
 	}

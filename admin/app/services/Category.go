@@ -2,7 +2,7 @@ package services
 
 import (
 	"github.com/gin-gonic/gin"
-	//"fmt"
+	"fmt"
 	"strconv"
 
 	pError    "shopping/pkg/error"
@@ -12,6 +12,48 @@ import (
 
 type Category struct {
 	BaseService
+}
+
+type CategorySearch struct {
+	Pid uint 
+}
+
+func (this *Category) ValidateOfList(c *gin.Context) (*CategorySearch, error) {
+	var search CategorySearch
+	
+	if err := c.ShouldBindJSON(&search); err != nil {
+		return &search, err
+	}
+
+	// TODO 参数验证
+	return &search, nil
+}
+
+type CategoryResponseList struct {
+	ID   uint   `json:"id"`
+	Pid  uint   `json:"pid"`
+	Name string `json:"name"`
+	Desc string `json:"desc"`
+}
+
+func (this *Category) List(data *CategorySearch) (interface{}, error) {
+	category := &mShopping.Category{}
+
+	var res    []CategoryResponseList
+	var tables []mShopping.Category
+
+	condition := make(map[string]interface{})
+	condition[orm.SearchAll]    = &tables
+	condition[orm.SearchFields] = []string{"id", "name", "pid"}
+	condition[orm.SearchReturn] = &res
+
+	result, err := category.Search(category, condition)
+
+	if err != nil {
+		return result, err
+	}
+
+	return result, nil
 }
 
 func (this *Category) ValidateOfShow(c *gin.Context) (uint, error) {
@@ -26,15 +68,34 @@ func (this *Category) ValidateOfShow(c *gin.Context) (uint, error) {
 	return uint(i), nil
 }
 
+type CategoryResponseDetail struct {
+	ID   uint   `json:"id"`
+	Pid  uint   `json:"pid"`
+	Name string `json:"name"`
+	Desc string `json:"desc"` 
+}
+
 func (this *Category) Show(id uint) (interface{}, error) {
 	category := &mShopping.Category{}
 
 	condition := make(map[string]interface{})
 	condition["id"]             = id
 	condition[orm.SearchOne]    = 1
-	condition[orm.SelectFields] = []string{"id", "name", "pid"}
+	condition[orm.SearchFields] = []string{"id", "name", "pid"}
+	condition[orm.SearchReturn] = &CategoryResponseDetail{}
 
-	return category.Search(category, condition)
+	result, err := category.Search(category, condition)
+
+	if err != nil {
+		return result, err
+	}
+
+	if result == nil {
+		return result, &pError.MessageError{Message: "not found data"}
+	}
+
+	fmt.Println("%T", result)
+	return result, nil
 }
 
 type CategoryCreate struct {
@@ -106,22 +167,19 @@ func (this *Category) ValidateOfUpdate(c *gin.Context) (*CategoryUpdate, error) 
 	return &update, nil
 }
 
-func (this *Category) Update(data *CategoryUpdate) (category *mShopping.Category, err error) {
-	category = &mShopping.Category{
+func (this *Category) Update(data *CategoryUpdate) (rows int64, err error) {
+	category := &mShopping.Category{
 		Name: data.Name,
 		Desc: data.Desc,
 	}
 
 	category.ID = data.ID
 
-	model, err := category.Update(category)
-
+	rows, err = category.Update(category)
 	if err != nil { return }
 
-	category, ok := model.(*mShopping.Category);
-
-	if !ok {
-		err = ErrStruct
+	if rows == 0 {
+		err = &pError.MessageError{Message: "not found data"}
 		return
 	}
 
