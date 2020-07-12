@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"fmt"
 	"strconv"
+	"io"
 
 	pError    "shopping/pkg/error"
 	mShopping "shopping/pkg/models/shopping"
@@ -14,14 +15,18 @@ type Category struct {
 	BaseService
 }
 
-type CategorySearch struct {
+type CategorySearchParam struct {
 	Pid uint 
 }
 
-func (this *Category) ValidateOfList(c *gin.Context) (*CategorySearch, error) {
-	var search CategorySearch
+func (this *Category) ValidateOfList(c *gin.Context) (*CategorySearchParam, error) {
+	var search CategorySearchParam
 	
 	if err := c.ShouldBindJSON(&search); err != nil {
+		if err == io.EOF {
+			return &search, nil
+		}
+		
 		return &search, err
 	}
 
@@ -29,17 +34,17 @@ func (this *Category) ValidateOfList(c *gin.Context) (*CategorySearch, error) {
 	return &search, nil
 }
 
-type CategoryResponseList struct {
+type CategorySearchRes struct {
 	ID   uint   `json:"id"`
 	Pid  uint   `json:"pid"`
 	Name string `json:"name"`
 	Desc string `json:"desc"`
 }
 
-func (this *Category) List(data *CategorySearch) (interface{}, error) {
+func (this *Category) List(data *CategorySearchParam) (interface{}, error) {
 	category := &mShopping.Category{}
 
-	var res    []CategoryResponseList
+	var res    []CategorySearchRes
 	var tables []mShopping.Category
 
 	condition := make(map[string]interface{})
@@ -98,15 +103,15 @@ func (this *Category) Show(id uint) (interface{}, error) {
 	return result, nil
 }
 
-type CategoryCreate struct {
+type CategoryCreateParam struct {
 	Type int8    `json:"type"`
 	Pid  uint    `json:"pid"`
 	Name string  `json:"name"`
 	Desc string  `json:"desc"`
 }
 
-func (this *Category) ValidateOfCreate(c *gin.Context) (*CategoryCreate, error) {
-	var create CategoryCreate
+func (this *Category) ValidateOfCreate(c *gin.Context) (*CategoryCreateParam, error) {
+	var create CategoryCreateParam
 
 	if err := c.ShouldBindJSON(&create); err != nil {
 		return &create, err
@@ -116,45 +121,40 @@ func (this *Category) ValidateOfCreate(c *gin.Context) (*CategoryCreate, error) 
 	return &create, nil
 }
 
-func (this *Category) Create(data *CategoryCreate) (category *mShopping.Category, err error) {
-	category = &mShopping.Category{
+func (this *Category) Create(data *CategoryCreateParam) (interface{}, error) {
+	category := &mShopping.Category{
 		Type: data.Type,
 		Pid : data.Pid,
 		Name: data.Name,
 		Desc: data.Desc,
 	}
 
-	model, err := category.Create(category)
+	_, err := category.Create(category)
 
-	if err != nil {
-		return
-	}
-
-	category, ok := model.(*mShopping.Category);
+	if err != nil { return nil, err }
+	return nil, nil
+	// category, ok := model.(*mShopping.Category);
 		
-	if !ok {
-		err = ErrStruct
-		return
-	}
-
-	return
+	// if !ok {
+	// 	err = ErrStruct
+	// 	return
+	// }
 }
 
-type CategoryUpdate struct {
+type CategoryUpdateParam struct {
 	ID   uint    `json:"id"` 
 	Name string  `json:"name"`
 	Desc string  `json:"desc"`
 }
 
-func (this *Category) ValidateOfUpdate(c *gin.Context) (*CategoryUpdate, error) {
-	var update CategoryUpdate
+func (this *Category) ValidateOfUpdate(c *gin.Context) (*CategoryUpdateParam, error) {
+	var update CategoryUpdateParam
 
 	if err := c.ShouldBindJSON(&update); err != nil {
 		return &update, err
 	}
 
-	id := c.Param("id")
-
+	id     := c.Param("id")
 	i, err := strconv.ParseUint(id, 10, 64)
 
 	if err != nil {
@@ -167,7 +167,7 @@ func (this *Category) ValidateOfUpdate(c *gin.Context) (*CategoryUpdate, error) 
 	return &update, nil
 }
 
-func (this *Category) Update(data *CategoryUpdate) (rows int64, err error) {
+func (this *Category) Update(data *CategoryUpdateParam) (rows int64, err error) {
 	category := &mShopping.Category{
 		Name: data.Name,
 		Desc: data.Desc,
@@ -187,8 +187,7 @@ func (this *Category) Update(data *CategoryUpdate) (rows int64, err error) {
 }
 
 func (this *Category) ValidateOfDelete(c *gin.Context) (uint, error) {
-	id := c.Param("id")
-
+	id     := c.Param("id")
 	i, err := strconv.ParseUint(id, 10, 64)
 
 	if err != nil {

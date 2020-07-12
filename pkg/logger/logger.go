@@ -98,7 +98,7 @@ func NewLogger(c *gin.Context) *zap.Logger {
         c.Set("requestId", requestId)
     }
 
-    fields := zap.Fields(zap.String("rid", requestId))
+    fields := zap.Fields(zap.String("rid", requestId), zap.String("url", c.Request.URL.Path))
     // 构造日志
     // logger := zap.New(core, caller, development, fields)
     return zap.New(core, fields)

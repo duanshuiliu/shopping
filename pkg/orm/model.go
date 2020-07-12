@@ -3,7 +3,7 @@ package orm
 import (
 	"github.com/jinzhu/gorm"
 	"errors"
-	"fmt"
+	// "fmt"
 )
 
 var (
@@ -41,10 +41,6 @@ func (this *Model) TableName() string {
 }
 
 func (this *Model) Condition(data map[string]interface{}, db *gorm.DB) *gorm.DB {
-	if value, ok := data["id"]; ok {
-		db = db.Where("id = ?", value)
-	}
-
 	return db
 }
 
@@ -57,18 +53,10 @@ func (this *Model) Create(modelmaker ModelMaker) (ModelMaker, error) {
 
 	result := db.Create(modelmaker)
 
-	fmt.Println("aaaa")
 	if result.Error != nil {
 		return modelmaker, result.Error
 	}
 
-	modelmaker, ok := result.Value.(ModelMaker)
-
-	if !ok {
-		return modelmaker, ErrStruct
-	}
-
-	//fmt.Println("orm result: ", result.Value, result.Error, result.RowsAffected)
 	return modelmaker, nil
 }
 
@@ -113,7 +101,6 @@ func (this *Model) Search(modelmaker ModelMaker, data map[string]interface{}) (i
 
 	tableName := modelmaker.TableName()
 	db = db.Table(tableName)
-
 	db = modelmaker.Condition(data, db)
 
 	if value, ok := data[SearchFields]; ok {
@@ -121,7 +108,7 @@ func (this *Model) Search(modelmaker ModelMaker, data map[string]interface{}) (i
 	}
 
 	if tables, ok := data[SearchAll]; ok {
-		fmt.Printf("%T", tables)
+		// fmt.Printf("%T", tables)
 		// db = db.Find(tables)
 		
 		if returnStruct, ok2 := data[SearchReturn]; ok2 {
