@@ -20,8 +20,10 @@ func (this *Goods) TableName() string {
 	return "goods"
 }
 
-func (this *Goods) Condition(data map[string]interface{}, db *gorm.DB) {
+func (this *Goods) Condition(data map[string]interface{}, db *gorm.DB) *gorm.DB {
 	if value, ok := data["id"]; ok {
 		db = db.Where("id = ?", value)
 	}
+
+	return db
 }

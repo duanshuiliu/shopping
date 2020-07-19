@@ -24,8 +24,10 @@ func (this *User) TableName() string {
 	return "users"
 }
 
-func (this *User) Condition(data map[string]interface{}, db *gorm.DB) {
+func (this *User) Condition(data map[string]interface{}, db *gorm.DB) *gorm.DB {
 	if value, ok := data["id"]; ok {
 		db = db.Where("id = ?", value)
 	}
+
+	return db
 }
