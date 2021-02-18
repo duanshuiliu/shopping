@@ -1,4 +1,4 @@
-package response
+package helper
 
 import (
 	"github.com/gin-gonic/gin"
@@ -11,13 +11,10 @@ import (
 type ResponseData struct {
 	// 1=正确输出 0=错误输出
 	Ret int `json:"ret"`
-
 	// 错误码
 	Code int `json:"code"`
-
 	// 输出信息
 	Info string `json:"info"`
-
 	// 输出数据
 	Data interface{} `json:"data"`
 }

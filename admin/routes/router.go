@@ -1,4 +1,4 @@
-package router
+package routes
 
 import (
 	"github.com/gin-gonic/gin"
@@ -9,7 +9,7 @@ import (
 
 func AddRoute(r *gin.Engine) {
 
-	admin := r.Group("/").Use(middleware.Recovery(), middleware.PreRequestLogger())
+	admin := r.Group("/").Use(middleware.Recovery(), middleware.Logger())
 	{
 		// 类别
 		category := &controller.CategoryController{}	

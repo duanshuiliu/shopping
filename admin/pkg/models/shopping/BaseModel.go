@@ -1,7 +1,7 @@
 package shopping
 
 import (
-	"shopping/pkg/orm"
+	"shopping/admin/pkg/orm"
 )
 
 type BaseModel struct {

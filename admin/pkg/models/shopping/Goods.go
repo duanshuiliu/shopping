@@ -1,7 +1,7 @@
 package shopping
 
 import (
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type Goods struct {

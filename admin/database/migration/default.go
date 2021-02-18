@@ -5,18 +5,15 @@ import (
 	"time"
 	"os"
 
-	config    "shopping/pkg/conf"
-	orm       "shopping/pkg/orm"
-	mShopping "shopping/pkg/models/shopping"
+	config    "shopping/admin/pkg/conf"
+	orm       "shopping/admin/pkg/orm"
+	mShopping "shopping/admin/pkg/models/shopping"
 )
 
 var regModels []orm.ModelMaker
 
 func init() {
-	if err := config.Register("../../conf"); err != nil {
-		fmt.Println("配置文件加载失败", err)
-		os.Exit(0)
-	}
+	config.DefaultConfigPath = "../../conf"
 
 	if err := orm.Register(); err != nil {
 		fmt.Println("数据库初始化失败", err)
@@ -25,26 +22,16 @@ func init() {
 }
 
 func main() {
-	fmt.Println("开始创建数据库表单:") 
+	fmt.Println("开始创建数据库表单:")
 
 	// 注册数据库表单
-	register(&mShopping.User{}, &mShopping.Category{}, &mShopping.Goods{}, &mShopping.Resource{})
+	regModels = append(regModels, &mShopping.User{}, &mShopping.Category{}, &mShopping.Goods{}, &mShopping.Resource{})
 	// 开始执行
 	run()
 }
 
-func register(modelmaker ...orm.ModelMaker) {
-	regModels = append(regModels, modelmaker...)
-}
-
 func run() {
-	if regModels == nil {
-		printMessage("暂无注册的模型")
-		return
-	}
-
 	for _, model := range regModels {
-
 		tableName := model.TableName()
 
 		if err := createTable(model); err != nil {
@@ -55,19 +42,12 @@ func run() {
 	}
 }
 
-func createTable(modelmaker orm.ModelMaker) error {
-	db, err := modelmaker.GetDb(modelmaker)
+func createTable(m orm.ModelMaker) error {
+	db, err := m.GetDb(m)
+	if err != nil { return err }
 
-	if err != nil {
-		return err
-	} 
-
-	result := db.Set("gorm:table_options", "ENGINE=InnoDB").AutoMigrate(modelmaker)
-
-	if result.Error != nil {
-		return result.Error
-	}
-
+	err = db.Set("gorm:table_options", "ENGINE=InnoDB").AutoMigrate(m)
+	if err != nil { return err }
 	return nil
 }
 
